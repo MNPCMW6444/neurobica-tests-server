@@ -15,8 +15,15 @@ const opinionSchema = new mongoose.Schema({
   wasSoogHatsava: { type: String, required: true },
   wasUnit: { type: String, required: true },
 
-  wasMyComm: { type: mongoose.Schema.Types.ObjectId, required: true },
-  wasMyAuth: { type: mongoose.Schema.Types.ObjectId, required: true },
+  wasMyCommMA: { type: Number, required: true },
+  wasMyCommRank: { type: String, required: true },
+  wasMyCommLastName: { type: String, required: true },
+  wasMyCommFirstName: { type: String, required: true },
+
+  wasMyAuthMA: { type: Number, required: true },
+  wasMyAuthRank: { type: String, required: true },
+  wasMyAuthLastName: { type: String, required: true },
+  wasMyAuthFirstName: { type: String, required: true },
 
   C1: { type: Number, required: true },
   C2: { type: Number, required: true },
