@@ -157,11 +157,9 @@ router.put("/editOpinion/:id", async (req, res) => {
       });
     }
     if (MonthsNo < 0)
-      return res
-        .status(400)
-        .json({
-          errorMessage: "לא ייתכן שפיקדת פחות מ0 חודשים / הזנת תו שאינו מספר",
-        });
+      return res.status(400).json({
+        errorMessage: "לא ייתכן שפיקדת פחות מ0 חודשים / הזנת תו שאינו מספר",
+      });
     if (!Position) {
       return res.status(400).json({
         errorMessage: "מה תפקיד הפקוד?",
@@ -429,11 +427,9 @@ router.post("/createOpinion", async (req, res) => {
       });
     }
     if (MonthsNo < 0)
-      return res
-        .status(400)
-        .json({
-          errorMessage: "לא ייתכן שפיקדת פחות מ0 חודשים / הזנת תו שאינו מספר",
-        });
+      return res.status(400).json({
+        errorMessage: "לא ייתכן שפיקדת פחות מ0 חודשים / הזנת תו שאינו מספר",
+      });
     if (!Position) {
       return res.status(400).json({
         errorMessage: "מה תפקיד הפקוד?",
@@ -612,8 +608,6 @@ router.post("/createOpinion", async (req, res) => {
       const wasMaslool = crewmm.Maslool;
       const wasSoogHatsava = crewmm.SoogHatsava;
       const wasUnit = crewmm.Unit;
-      const wasMyComm = crewmm.MyComm;
-      const wasMyAuth = crewmm.MyAuth;
       const fillDate = new Date(
         gfillDate.substring(3, 5) +
           "/" +

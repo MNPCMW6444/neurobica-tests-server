@@ -434,6 +434,22 @@ router.get("/getFullDetails", async (req, res) => {
   }
 });
 
+router.get("/getFullDetailsE/:ma", async (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+    const validatedUser = jwt.verify(token, process.env.JWTSECRET);
+
+    const userr = await User.findOne({ MA: req.params.ma });
+
+    res.json(userr);
+  } catch (err) {
+    res.status(401).send();
+  }
+});
+
 router.get("/getNachsal", async (req, res) => {
   try {
     const token = req.cookies.token;
