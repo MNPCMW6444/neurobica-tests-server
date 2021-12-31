@@ -676,4 +676,256 @@ router.post("/createOpinion", async (req, res) => {
   }
 });
 
+router.get("/getmyavgs/", async (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+    const validatedUser = jwt.verify(token, process.env.JWTSECRET);
+
+    const userr = await User.findById(validatedUser.user);
+
+    const gafusers = await User.find({
+      Unit: userr.Unit,
+      Maslool: userr.Maslool,
+    });
+    const courseusers = await User.find({ CourseNo: userr.CourseNo });
+
+    let gafopinions = [];
+    let courseopinions = [];
+
+    //  let resses = [];
+    //  let ress;
+    //  let emptyres;
+
+    // for (
+    //  let j = 4000;
+    //  j < 6000;
+    //  j++ // כי אלף שנים בעיניך כיום אתמול כי יעבר ואשמורה בלילה
+    // ) {
+    for (let i = 0; i < gafusers.length; i++)
+      gafopinions.push(
+        await Opinion.find({
+          CrewM: gafusers[i]._id,
+        })
+      );
+
+    for (let i = 0; i < courseusers.length; i++)
+      courseopinions.push(
+        await Opinion.find({
+          CrewM: courseusers[i]._id,
+        })
+      );
+
+    //gafopinions = gafopinions.filter((val) => val !== null && val !== []);
+    //courseopinions = courseopinions.filter((val) => val !== null && val !== []);
+
+    let gafbytkufa = [];
+    let coursebytkufa = [];
+    let ttkufa = 0;
+    let temp = 0;
+    while (gafopinions.length > 0) {
+      ttkufa = gafopinions[0][0] && gafopinions[0][0].Tkufa;
+      for (let i = 0; i < gafopinions.length; i++) {
+        for (let j = 0; j < gafopinions.length; j++) {
+          if (
+            gafopinions[i] &&
+            gafopinions[i][j] &&
+            gafopinions[i][j].Tkufa === ttkufa
+          ) {
+            temp = gafopinions[i][j];
+            gafopinions[i].splice(j, 1);
+            gafbytkufa.push({ tkufa: ttkufa, opinion: temp });
+          }
+        }
+      }
+      if (gafopinions[0].length === 0) gafopinions.splice(0, 1);
+    }
+
+    while (courseopinions.length > 0) {
+      ttkufa = courseopinions[0][0] && courseopinions[0][0].Tkufa;
+      for (let i = 0; i < courseopinions.length; i++) {
+        for (let j = 0; j < courseopinions.length; j++) {
+          if (
+            courseopinions[i] &&
+            courseopinions[i][j] &&
+            courseopinions[i][j].Tkufa === ttkufa
+          ) {
+            temp = courseopinions[i][j];
+            courseopinions[i].splice(j, 1);
+            coursebytkufa.push({ tkufa: ttkufa, opinion: temp });
+          }
+        }
+      }
+      if (courseopinions[0].length === 0) courseopinions.splice(0, 1);
+    }
+
+    let bettergaf = [];
+    let inner;
+
+    let currentt = 0;
+    while (gafbytkufa.length > 0) {
+      inner = [];
+      currentt = gafbytkufa[0].tkufa;
+      while (gafbytkufa[0] && currentt === gafbytkufa[0].tkufa) {
+        inner.push(gafbytkufa[0].opinion);
+        gafbytkufa.splice(0, 1);
+      }
+      bettergaf.push({ Tkufa: currentt, OpinionArray: inner });
+    }
+
+    let bettercourse = [];
+
+    currentt = 0;
+    while (coursebytkufa.length > 0) {
+      inner = [];
+      currentt = coursebytkufa[0].tkufa;
+      while (coursebytkufa[0] && currentt === coursebytkufa[0].tkufa) {
+        inner.push(coursebytkufa[0].opinion);
+        coursebytkufa.splice(0, 1);
+      }
+      bettercourse.push({ Tkufa: currentt, OpinionArray: inner });
+    }
+
+    let gafopinionscsonly;
+    let gapi;
+    let gafavgsbytkufot = [];
+
+    for (let k = 0; k < bettergaf.length; k++) {
+      gafopinionscsonly = [];
+
+      for (let i = 0; i < bettergaf[k].OpinionArray.length; i++)
+        gafopinionscsonly.push({
+          c1: bettergaf[k].OpinionArray[i].C1,
+          c2: bettergaf[k].OpinionArray[i].C2,
+          c3: bettergaf[k].OpinionArray[i].C3,
+          c4: bettergaf[k].OpinionArray[i].C4,
+          c5: bettergaf[k].OpinionArray[i].C5,
+          c6: bettergaf[k].OpinionArray[i].C6,
+          c7: bettergaf[k].OpinionArray[i].C7,
+          c8: bettergaf[k].OpinionArray[i].C8,
+          c9: bettergaf[k].OpinionArray[i].C9,
+          c10: bettergaf[k].OpinionArray[i].M1,
+        });
+
+      gapi = {
+        c1: 0,
+        c2: 0,
+        c3: 0,
+        c4: 0,
+        c5: 0,
+        c6: 0,
+        c7: 0,
+        c8: 0,
+        c9: 0,
+        c10: 0,
+      };
+
+      for (let i = 0; i < gafopinionscsonly.length; i++)
+        gapi = {
+          c1: gapi.c1 + gafopinionscsonly[i].c1,
+          c2: gapi.c2 + gafopinionscsonly[i].c2,
+          c3: gapi.c3 + gafopinionscsonly[i].c3,
+          c4: gapi.c4 + gafopinionscsonly[i].c4,
+          c5: gapi.c5 + gafopinionscsonly[i].c5,
+          c6: gapi.c6 + gafopinionscsonly[i].c6,
+          c7: gapi.c7 + gafopinionscsonly[i].c7,
+          c8: gapi.c8 + gafopinionscsonly[i].c8,
+          c9: gapi.c9 + gafopinionscsonly[i].c9,
+          c10: gapi.c10 + gafopinionscsonly[i].c10,
+        };
+
+      gapi = {
+        c1: gapi.c1 / gafopinionscsonly.length,
+        c2: gapi.c2 / gafopinionscsonly.length,
+        c3: gapi.c3 / gafopinionscsonly.length,
+        c4: gapi.c4 / gafopinionscsonly.length,
+        c5: gapi.c5 / gafopinionscsonly.length,
+        c6: gapi.c6 / gafopinionscsonly.length,
+        c7: gapi.c7 / gafopinionscsonly.length,
+        c8: gapi.c8 / gafopinionscsonly.length,
+        c9: gapi.c9 / gafopinionscsonly.length,
+        c10: gapi.c10 / gafopinionscsonly.length,
+      };
+
+      gafavgsbytkufot.push({ Tkufa: bettergaf[k].Tkufa, avg: gapi });
+    }
+
+    let courseopinionscsonly;
+    let cursi;
+    let courseavgsbytkufot = [];
+
+    for (let k = 0; k < bettercourse.length; k++) {
+      courseopinionscsonly = [];
+
+      for (let i = 0; i < bettercourse[k].OpinionArray.length; i++)
+        courseopinionscsonly.push({
+          c1: bettercourse[k].OpinionArray[i].C1,
+          c2: bettercourse[k].OpinionArray[i].C2,
+          c3: bettercourse[k].OpinionArray[i].C3,
+          c4: bettercourse[k].OpinionArray[i].C4,
+          c5: bettercourse[k].OpinionArray[i].C5,
+          c6: bettercourse[k].OpinionArray[i].C6,
+          c7: bettercourse[k].OpinionArray[i].C7,
+          c8: bettercourse[k].OpinionArray[i].C8,
+          c9: bettercourse[k].OpinionArray[i].C9,
+          c10: bettercourse[k].OpinionArray[i].M1,
+        });
+
+      cursi = {
+        c1: 0,
+        c2: 0,
+        c3: 0,
+        c4: 0,
+        c5: 0,
+        c6: 0,
+        c7: 0,
+        c8: 0,
+        c9: 0,
+        c10: 0,
+      };
+
+      for (let i = 0; i < courseopinionscsonly.length; i++)
+        cursi = {
+          c1: cursi.c1 + courseopinionscsonly[i].c1,
+          c2: cursi.c2 + courseopinionscsonly[i].c2,
+          c3: cursi.c3 + courseopinionscsonly[i].c3,
+          c4: cursi.c4 + courseopinionscsonly[i].c4,
+          c5: cursi.c5 + courseopinionscsonly[i].c5,
+          c6: cursi.c6 + courseopinionscsonly[i].c6,
+          c7: cursi.c7 + courseopinionscsonly[i].c7,
+          c8: cursi.c8 + courseopinionscsonly[i].c8,
+          c9: cursi.c9 + courseopinionscsonly[i].c9,
+          c10: cursi.c10 + courseopinionscsonly[i].c10,
+        };
+      cursi = {
+        c1: cursi.c1 / courseopinionscsonly.length,
+        c2: cursi.c2 / courseopinionscsonly.length,
+        c3: cursi.c3 / courseopinionscsonly.length,
+        c4: cursi.c4 / courseopinionscsonly.length,
+        c5: cursi.c5 / courseopinionscsonly.length,
+        c6: cursi.c6 / courseopinionscsonly.length,
+        c7: cursi.c7 / courseopinionscsonly.length,
+        c8: cursi.c8 / courseopinionscsonly.length,
+        c9: cursi.c9 / courseopinionscsonly.length,
+        c10: cursi.c10 / courseopinionscsonly.length,
+      };
+
+      courseavgsbytkufot.push({ Tkufa: bettercourse[k].Tkufa, avg: cursi });
+    }
+
+    // if (j === 2000) {
+    //   emptyres = ress;
+    //    resses.push(ress);
+    //  } else if (ress !== emptyres) resses.push(ress);
+    //   }
+
+    res.json({ gapi: gafavgsbytkufot, cursi: courseavgsbytkufot });
+  } catch (err) {
+    res.status(500).send();
+    console.log(err);
+  }
+});
+
 module.exports = router;
