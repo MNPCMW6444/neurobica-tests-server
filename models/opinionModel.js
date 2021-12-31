@@ -38,7 +38,7 @@ const opinionSchema = new mongoose.Schema(
 
     M1: { type: Number, required: true },
 
-    M2: { type: Number, required: true },
+    M2: { type: Number, required: false },
 
     Tp: [{ type: String, required: true }],
     Fp: [{ type: String, required: true }],

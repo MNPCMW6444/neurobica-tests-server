@@ -571,13 +571,17 @@ router.post("/createOpinion", async (req, res) => {
         errorMessage: "חסר ציון מסכם",
       });
     }
-
-    if (!(M2 == 0 || M2 == 1 || M2 == 2 || M2 == 3 || M2 == 4)) {
-      return res.status(400).json({
-        errorMessage: "חסר פוטנציאל להובלה",
-      });
+    const crewmm = await User.findById(CrewM);
+    if (
+      (crewmm.Dereg === "a" || crewmm.Dereg === "b") &&
+      crewmm.SoogHatsava !== "miluim"
+    ) {
+      if (!(M2 == 0 || M2 == 1 || M2 == 2 || M2 == 3 || M2 == 4)) {
+        return res.status(400).json({
+          errorMessage: "חסר פוטנציאל להובלה",
+        });
+      }
     }
-
     if (!Tp) {
       return res.status(400).json({
         errorMessage: "לא התקבלו יעדים לשיפור",
@@ -591,7 +595,6 @@ router.post("/createOpinion", async (req, res) => {
     }
 
     if (userr.Role === "DIRECT") {
-      const crewmm = await User.findById(CrewM);
       const hiscomm = await User.findById(crewmm.MyComm);
       const hisauth = await User.findById(crewmm.MyAuth);
       const wasMyCommMA = hiscomm.MA;
