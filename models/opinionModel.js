@@ -16,15 +16,15 @@ const opinionSchema = new mongoose.Schema(
     wasSoogHatsava: { type: String, required: true },
     wasUnit: { type: String, required: true },
 
-    wasMyCommMA: { type: Number, required: true },
-    wasMyCommRank: { type: String, required: true },
-    wasMyCommLastName: { type: String, required: true },
-    wasMyCommFirstName: { type: String, required: true },
+    wasMyEvaMA: { type: Number, required: true },
+    wasMyEvaRank: { type: String, required: true },
+    wasMyEvaLastName: { type: String, required: true },
+    wasMyEvaFirstName: { type: String, required: true },
 
-    wasMyAuthMA: { type: Number, required: true },
-    wasMyAuthRank: { type: String, required: true },
-    wasMyAuthLastName: { type: String, required: true },
-    wasMyAuthFirstName: { type: String, required: true },
+    wasMyAuthMA: { type: Number, required: false },
+    wasMyAuthRank: { type: String, required: false },
+    wasMyAuthLastName: { type: String, required: false },
+    wasMyAuthFirstName: { type: String, required: false },
 
     C1: { type: Number, required: true },
     C2: { type: Number, required: true },

@@ -307,6 +307,36 @@ router.get("/getmypeople", async (req, res) => {
   }
 });
 
+router.get("/getmypeopleba", async (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+    const validatedUser = jwt.verify(token, process.env.JWTSECRET);
+
+    const userr = await User.findById(validatedUser.user);
+
+    if (userr.Role === "AUTHCO") {
+      allusers = await User.find();
+      for (let i = 0; i < allusers.length; i++) {
+        if (!allusers[i].MyAuth || allusers[i].MyAuth.toString() != userr._id) {
+          allusers.splice(i, 1);
+          i--;
+        }
+      }
+      res.json(allusers);
+    } else {
+      return res.status(401).json({
+        errorMessage: "ניסיתי לבדוק מי הם אנשיך כמפקד יחידה אך אינך מפקד יחידה",
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send();
+  }
+});
+
 router.get("/gethistfud/:id", async (req, res) => {
   try {
     const token = req.cookies.token;

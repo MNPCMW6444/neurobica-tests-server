@@ -47,10 +47,17 @@ router.get("/getmyOpinion/:id", async (req, res) => {
 
     const opinion = await Opinion.findById(req.params.id);
 
-    if (opinion.CrewM.toJSON() != userr._id.toJSON())
-      return res
-        .status(400)
-        .json({ errorMessage: "אינך יכול לצפות בחוו''ד זה מכיוון שאינו שלך" });
+    let ifpakud = await User.findById(opinion.CrewM.toJSON());
+
+    if (
+      opinion.CrewM.toJSON() != userr._id.toJSON() &&
+      ifpakud.MyComm.toJSON() != userr._id.toJSON() &&
+      ifpakud.MyAuth.toJSON() != userr._id.toJSON()
+    )
+      return res.status(400).json({
+        errorMessage:
+          "אינך יכול לצפות בחוו''ד זה מכיוון שאינו שלך או של פקוד שלך",
+      });
 
     res.json(await addFudsToOpinion(opinion));
   } catch (err) {
@@ -81,14 +88,52 @@ router.get("/getallmyn/:ma", async (req, res) => {
         opinions[i] = await addFudsToOpinion(opinions[i]);
       res.json(opinions);
     } else {
-      return res.status(401).json({
-        errorMessage:
-          'ניסית לקבל את כל החוו"דים של איש צוות אך אינך מפקד גף שלו',
-      });
+      try {
+        if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+        if (comm._id.toString() === screww[0].MyAuth.toString()) {
+          for (let i = 0; i < opinions.length; i++)
+            opinions[i] = await addFudsToOpinion(opinions[i]);
+          res.json(opinions);
+        } else {
+          return res.status(401).json({
+            errorMessage:
+              'ניסית לקבל את כל החוו"דים של איש צוות אך אינך מפקד יחידה שלו',
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        res.status(500).send();
+      }
     }
   } catch (err) {
-    console.log(err);
-    res.status(500).send();
+    try {
+      const token = req.cookies.token;
+
+      if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+      const validatedUser = jwt.verify(token, process.env.JWTSECRET);
+
+      const userr = await User.findById(validatedUser.user);
+
+      const screww = await User.find({ MA: req.params.ma });
+
+      const opinions = await Opinion.find({ CrewM: screww });
+
+      if (userr._id.toString() === screww[0].MyAuth.toString()) {
+        for (let i = 0; i < opinions.length; i++)
+          opinions[i] = await addFudsToOpinion(opinions[i]);
+        res.json(opinions);
+      } else {
+        return res.status(401).json({
+          errorMessage:
+            'ניסית לקבל את כל החוו"דים של איש צוות אך אינך מפקד יחידה שלו',
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).send();
+    }
   }
 });
 
@@ -594,18 +639,46 @@ router.post("/createOpinion", async (req, res) => {
       });
     }
 
-    if (userr.Role === "DIRECT") {
+    if (userr.Role === "DIRECT" || userr.Role === "AUTHCO") {
       const hiscomm = await User.findById(crewmm.MyComm);
       const hisauth = await User.findById(crewmm.MyAuth);
-      const wasMyCommMA = hiscomm.MA;
-      const wasMyCommRank = hiscomm.Rank;
-      const wasMyCommLastName = hiscomm.LastName;
-      const wasMyCommFirstName = hiscomm.FirstName;
 
-      const wasMyAuthMA = hisauth.MA;
-      const wasMyAuthRank = hisauth.Rank;
-      const wasMyAuthLastName = hisauth.LastName;
-      const wasMyAuthFirstName = hisauth.FirstName;
+      let lwasMyEvaMA;
+      let lwasMyEvaRank;
+      let lwasMyEvaLastName;
+      let lwasMyEvaFirstName;
+
+      let lwasMyAuthMA;
+      let lwasMyAuthRank;
+      let lwasMyAuthLastName;
+      let lwasMyAuthFirstName;
+
+      if (crewmm.Dereg === "c" || crewmm.Dereg === "d") {
+        lwasMyEvaMA = hisauth.MA;
+        lwasMyEvaRank = hisauth.Rank;
+        lwasMyEvaLastName = hisauth.LastName;
+        lwasMyEvaFirstName = hisauth.FirstName;
+      } else {
+        lwasMyEvaMA = hiscomm.MA;
+        lwasMyEvaRank = hiscomm.Rank;
+        lwasMyEvaLastName = hiscomm.LastName;
+        lwasMyEvaFirstName = hiscomm.FirstName;
+        lwasMyAuthMA = hisauth.MA;
+        lwasMyAuthRank = hisauth.Rank;
+        lwasMyAuthLastName = hisauth.LastName;
+        lwasMyAuthFirstName = hisauth.FirstName;
+      }
+
+      const wasMyEvaMA = lwasMyEvaMA;
+      const wasMyEvaRank = lwasMyEvaRank;
+      const wasMyEvaLastName = lwasMyEvaLastName;
+      const wasMyEvaFirstName = lwasMyEvaFirstName;
+
+      const wasMyAuthMA = lwasMyAuthMA;
+      const wasMyAuthRank = lwasMyAuthRank;
+      const wasMyAuthLastName = lwasMyAuthLastName;
+      const wasMyAuthFirstName = lwasMyAuthFirstName;
+
       const wasRank = crewmm.Rank;
       const wasDereg = crewmm.Dereg;
       const wasMaslool = crewmm.Maslool;
@@ -620,42 +693,80 @@ router.post("/createOpinion", async (req, res) => {
           "Z"
       );
       const Signed = gSigned === "כן";
-      if (crewmm.MyComm.toString() === userr._id.toString()) {
+      if (
+        (crewmm.MyComm && crewmm.MyComm.toString()) === userr._id.toString() ||
+        crewmm.MyAuth.toString() === userr._id.toString()
+      ) {
         if ((await Opinion.findOne({ CrewM: crewmm, Tkufa: Tkufa })) === null) {
-          const newOpinion = new Opinion({
-            CrewM,
-            Signed,
-            Tkufa,
-            fillDate,
-            MonthsNo,
-            Position,
-            wasRank,
-            wasDereg,
-            wasMaslool,
-            wasSoogHatsava,
-            wasUnit,
-            wasMyCommMA,
-            wasMyCommRank,
-            wasMyCommLastName,
-            wasMyCommFirstName,
-            wasMyAuthMA,
-            wasMyAuthRank,
-            wasMyAuthLastName,
-            wasMyAuthFirstName,
-            C1,
-            C2,
-            C3,
-            C4,
-            C5,
-            C6,
-            C7,
-            C8,
-            C9,
-            M1,
-            M2,
-            Tp,
-            Fp,
-          });
+          let lnewOpinion;
+          if (crewmm.Dereg === "a" || crewmm.Dereg === "b")
+            lnewOpinion = new Opinion({
+              CrewM,
+              Signed,
+              Tkufa,
+              fillDate,
+              MonthsNo,
+              Position,
+              wasRank,
+              wasDereg,
+              wasMaslool,
+              wasSoogHatsava,
+              wasUnit,
+              wasMyEvaMA,
+              wasMyEvaRank,
+              wasMyEvaLastName,
+              wasMyEvaFirstName,
+              wasMyAuthMA,
+              wasMyAuthRank,
+              wasMyAuthLastName,
+              wasMyAuthFirstName,
+              C1,
+              C2,
+              C3,
+              C4,
+              C5,
+              C6,
+              C7,
+              C8,
+              C9,
+              M1,
+              M2,
+              Tp,
+              Fp,
+            });
+          else
+            lnewOpinion = new Opinion({
+              CrewM,
+              Signed,
+              Tkufa,
+              fillDate,
+              MonthsNo,
+              Position,
+              wasRank,
+              wasDereg,
+              wasMaslool,
+              wasSoogHatsava,
+              wasUnit,
+              wasMyEvaMA,
+              wasMyEvaRank,
+              wasMyEvaLastName,
+              wasMyEvaFirstName,
+              C1,
+              C2,
+              C3,
+              C4,
+              C5,
+              C6,
+              C7,
+              C8,
+              C9,
+              M1,
+              M2,
+              Tp,
+              Fp,
+            });
+
+          const newOpinion = lnewOpinion;
 
           const savedOpinion = await newOpinion.save();
 
@@ -666,7 +777,8 @@ router.post("/createOpinion", async (req, res) => {
           });
       } else
         return res.status(401).json({
-          errorMessage: "ניסיתי לעדכן חווד של פקוד בגף אך אינך מפקד גף שלו",
+          errorMessage:
+            "ניסיתי לעדכן חווד של פקוד בגף אך אינך מפקד גף או יחידה שלו",
         });
     } else {
       return res.status(401).json({
