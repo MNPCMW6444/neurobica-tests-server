@@ -349,11 +349,12 @@ router.get("/gethistfud/:id", async (req, res) => {
 
     if (userr.Role === "DIRECT") {
       const crewmm = await User.findById(req.params.id);
-      if (crewmm.MyComm.toString() === userr._id.toString()) res.json(crewmm);
-      else
+      //if (crewmm.MyComm.toString() === userr._id.toString())
+      res.json(crewmm);
+      /*  else
         return res.status(401).json({
           errorMessage: "ניסיתי לקבל פרטים של פקוד בגף אך אינך מפקד גף שלו",
-        });
+        }); */ ///   נותן למפקדי גפים מידע על מפקדי יחידות וכו'
     } else {
       return res.status(401).json({
         errorMessage: "ניסיתי לקבל פרטים של פקוד בגף אך אינך מפקד בכללי",

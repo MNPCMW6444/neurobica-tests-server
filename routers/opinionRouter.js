@@ -35,6 +35,30 @@ router.get("/getallmy", async (req, res) => {
   }
 });
 
+router.get("/getallunapp", async (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+    const validatedUser = jwt.verify(token, process.env.JWTSECRET);
+
+    const userr = await User.findById(validatedUser.user);
+
+    const opinions = await Opinion.find({
+      wasMyAuthMA: userr.MA,
+      wasMyAuthApped: false,
+    });
+
+    for (let i = 0; i < opinions.length; i++)
+      opinions[i] = await addFudsToOpinion(opinions[i]);
+
+    res.json(opinions);
+  } catch (err) {
+    res.status(500).send();
+  }
+});
+
 router.get("/getmyOpinion/:id", async (req, res) => {
   try {
     const token = req.cookies.token;
@@ -395,6 +419,7 @@ router.put("/editOpinion/:id", async (req, res) => {
         opinionn.M2 = M2;
         opinionn.Tp = Tp;
         opinionn.Fp = Fp;
+        opinionn.wasMyAuthApped = false;
 
         const savedOpinion = await opinionn.save();
 
@@ -406,6 +431,54 @@ router.put("/editOpinion/:id", async (req, res) => {
     } else {
       return res.status(401).json({
         errorMessage: "ניסיתי לעדכן חווד של פקוד בגף אך אינך מפקד בכללי",
+      });
+    }
+  } catch (err) {
+    res.status(500).send();
+    console.log(err);
+  }
+});
+
+router.get("/approve/:id", async (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+    const validatedUser = jwt.verify(token, process.env.JWTSECRET);
+
+    const userr = await User.findById(validatedUser.user);
+
+    const opinionId = req.params.id;
+
+    if (!opinionId)
+      return res.status(400).json({
+        errorMessage: "יש בעיה... לא התקבל מזהה חוו''ד",
+      });
+    const opinionn = await Opinion.findById(opinionId);
+    if (opinionn === "not found")
+      return res.status(400).json({
+        errorMessage: 'יש בעיה... לא נמצא חוו"ד התואם את המזהה שהתקבל',
+      });
+
+    if (userr.Role === "AUTHCO") {
+      const crewmm = await User.findById(opinionn.CrewM._id);
+
+      if (crewmm.MyAuth.toString() === userr._id.toString()) {
+        opinionn.wasMyAuthApped = true;
+
+        const savedOpinion = await opinionn.save();
+
+        res.json({ answer: savedOpinion.wasMyAuthApped });
+      } else
+        return res.status(401).json({
+          errorMessage:
+            "ניסיתי לאשר חווד של פקוד ביחידה אך אינך מפקד יחידה שלו",
+        });
+    } else {
+      return res.status(401).json({
+        errorMessage:
+          "ניסיתי לאשר חווד של פקוד ביחידה אך אינך מפקד יחידה בכללי",
       });
     }
   } catch (err) {

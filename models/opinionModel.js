@@ -25,6 +25,7 @@ const opinionSchema = new mongoose.Schema(
     wasMyAuthRank: { type: String, required: false },
     wasMyAuthLastName: { type: String, required: false },
     wasMyAuthFirstName: { type: String, required: false },
+    wasMyAuthApped: { type: Boolean, required: false, default: false },
 
     C1: { type: Number, required: true },
     C2: { type: Number, required: true },

@@ -33,4 +33,3 @@ mongoose.connect(
 
 app.use("/user", require("./routers/userRouter"));
 app.use("/opinion", require("./routers/opinionRouter"));
-app.use("/certification", require("./routers/certificationRouter"));
