@@ -100,6 +100,44 @@ router.put("/takeCrewmbyComm", async (req, res) => {
   }
 });
 
+router.put("/changemypass", async (req, res) => {
+  try {
+    const { iMA } = req.body;
+
+    const token = req.cookies.token;
+
+    if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+    const validatedUser = jwt.verify(token, process.env.JWTSECRET);
+
+    const userr = await User.findById(validatedUser.user);
+
+    const { pass, pass2 } = req.body;
+
+    if (pass.length < 1)
+      return res.status(400).json({
+        errorMessage: "לא ניתן להשתמש בסיסמה ריקה",
+      });
+
+    if (pass !== pass2)
+      return res.status(400).json({
+        errorMessage: "סיסמאות לא תואמות",
+      });
+
+    const salt = await bcrypt.genSalt();
+    const ph = await bcrypt.hash(pass, salt);
+
+    userr.passwordHash = ph;
+
+    const saveduserr = await userr.save();
+
+    res.json({ SUC: "YES" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send();
+  }
+});
+
 router.put("/takeCommbyAuth", async (req, res) => {
   try {
     const { iMA } = req.body;
