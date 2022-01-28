@@ -31,6 +31,7 @@ const mofaSchema = new mongoose.Schema(
     M11: { type: String, required: false },
     M21: { type: String, required: false },
     Mf: { type: String, required: false },
+    IsDeleted: { type: Boolean, required: true },
   },
   {
     timestamps: true,

@@ -13,7 +13,7 @@ router.get("/getallmy", async (req, res) => {
 
     const userr = await User.findById(validatedUser.user);
 
-    const mofas = await Mofa.find({ CrewM: userr });
+    const mofas = await Mofa.find({ CrewM: userr, IsDeleted: false });
 
     for (let i = 0; i < mofas.length; i++) mofas[i].name = userr.NickName;
 
@@ -216,6 +216,7 @@ router.post("/createmofa", async (req, res) => {
         fillDatep.substring(6, fillDatep.length) +
         "Z"
     );
+    const IsDeleted = false;
 
     const newmofa = new Mofa({
       isTest,
@@ -244,6 +245,7 @@ router.post("/createmofa", async (req, res) => {
       M11,
       M21,
       Mf,
+      IsDeleted,
     });
 
     const savednewmofa = await newmofa.save();
@@ -254,6 +256,31 @@ router.post("/createmofa", async (req, res) => {
     console.log(err);
   }
 });
+
+router.delete("/:id", async (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+    const validatedUser = jwt.verify(token, process.env.JWTSECRET);
+
+    const userr = await User.findById(validatedUser.user);
+
+    const mofa = await Mofa.findById(req.params.id);
+
+    const c6 = mofa.C6;
+
+    //const ress = await mofa.delete();
+    mofa.IsDeleted = true;
+    const ress = await mofa.save();
+
+    res.json(c6 === ress.C6 ? { res: "asd" } : { res: "problem" });
+  } catch (err) {
+    res.status(500).send();
+  }
+});
+
 /* 
 router.get("/getallmyn/:ma", async (req, res) => {
   try {
