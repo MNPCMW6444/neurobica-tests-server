@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const mofaSchema = new mongoose.Schema(
   {
     isTest: { type: Boolean, required: true },
+    isPass: { type: Boolean, required: true },
     fillDate: { type: Date, required: true },
     CrewM: { type: mongoose.Schema.Types.ObjectId, required: true },
     name: { type: String, required: false },

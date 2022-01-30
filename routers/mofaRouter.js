@@ -23,6 +23,26 @@ router.get("/getallmy", async (req, res) => {
   }
 });
 
+router.get("/getallhis/:ma", async (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+    const validatedUser = jwt.verify(token, process.env.JWTSECRET);
+
+    const userr = await User.find({ MA: req.params.ma });
+
+    const mofas = await Mofa.find({ CrewM: userr, IsDeleted: false });
+
+    for (let i = 0; i < mofas.length; i++) mofas[i].name = userr.NickName;
+
+    res.json(mofas);
+  } catch (err) {
+    res.status(500).send();
+  }
+});
+
 router.post("/createmofa", async (req, res) => {
   try {
     const token = req.cookies.token;
@@ -33,6 +53,7 @@ router.post("/createmofa", async (req, res) => {
 
     const {
       isTest,
+      isPass,
       fillDatep,
       CrewM,
       name,
@@ -208,6 +229,11 @@ router.post("/createmofa", async (req, res) => {
       });
     }
 
+    if (M1 < 7 && isPass)
+      return res
+        .status(400)
+        .json({ errorMessage: "לא ניתן להעביר מבחן עם ציון מסכם נמוך מממוצע" });
+
     const fillDate = new Date(
       fillDatep.substring(3, 5) +
         "/" +
@@ -220,6 +246,7 @@ router.post("/createmofa", async (req, res) => {
 
     const newmofa = new Mofa({
       isTest,
+      isPass,
       fillDate,
       CrewM,
       name,

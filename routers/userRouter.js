@@ -636,4 +636,96 @@ router.put("/updateFullDetails", async (req, res) => {
   }
 });
 
+router.put("/updateFullDetails2/:ma", async (req, res) => {
+  try {
+    const {
+      firstname,
+      lastname,
+      nickname,
+      courseno,
+      birthdate,
+      email,
+      mainphone,
+      emergencyphone,
+      addresscity,
+      addressline,
+      rank,
+      unit,
+      soogHatsava,
+      maslool,
+    } = req.body;
+
+    if (!firstname)
+      return res.status(400).json({ errorMessage: "נא למלא שם פרטי" });
+
+    if (!lastname)
+      return res.status(400).json({ errorMessage: "נא למלא שם משפחה" });
+
+    if (!courseno)
+      return res.status(400).json({ errorMessage: "נא למלא מספר קורס" });
+
+    if (!birthdate)
+      return res.status(400).json({ errorMessage: "נא למלא תאריך לידה" });
+
+    if (!email)
+      return res
+        .status(400)
+        .json({ errorMessage: "נא למלא כתובת דואר אלקטרוני" });
+
+    if (!mainphone)
+      return res.status(400).json({ errorMessage: "נא למלא מספר טלפון" });
+
+    if (!addresscity)
+      return res.status(400).json({ errorMessage: "עיר מגורים" });
+    addressline;
+
+    if (!addressline)
+      return res.status(400).json({ errorMessage: "נא למלא כתובת מגורים" });
+
+    if (!rank) return res.status(400).json({ errorMessage: "נא למלא דרגה" });
+
+    if (!unit) return res.status(400).json({ errorMessage: "נא לבחור יחידה" });
+
+    if (!soogHatsava)
+      return res.status(400).json({ errorMessage: "נא לבחור סוג הצבה" });
+
+    if (!maslool)
+      return res.status(400).json({ errorMessage: "נא לבחור מסלול" });
+
+    const token = req.cookies.token;
+
+    if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+    const validatedUser = jwt.verify(token, process.env.JWTSECRET);
+
+    const userr = await User.findById(validatedUser.user);
+
+    if (userr.Role === "KAHAD") {
+      const userrr = await User.findOne({ MA: req.params.ma });
+
+      userrr.FirstName = firstname;
+      userrr.LastName = lastname;
+      userrr.NickName = nickname;
+      userrr.CourseNo = courseno;
+      userrr.BirthDate = birthdate;
+      userrr.Email = email;
+      userrr.MainPhone = mainphone;
+      userrr.EmergencyPhone = emergencyphone;
+      userrr.AddressCity = addresscity;
+      userrr.AddressLine = addressline;
+      userrr.Rank = rank;
+      userrr.Unit = unit;
+      userrr.SoogHatsava = soogHatsava;
+      userrr.Maslool = maslool;
+
+      const saveduserr = await userrr.save();
+
+      res.json(saveduserr);
+    } else return res.status(400).json({ errorMessage: "אינך מנהל כח אדם" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ errorMessage: "נתונים לא תקינים" });
+  }
+});
+
 module.exports = router;
