@@ -112,7 +112,7 @@ router.put("/changemypass", async (req, res) => {
 
     const userr = await User.findById(validatedUser.user);
 
-    const { pass, pass2 } = req.body;
+    const { dereg, pass, pass2 } = req.body;
 
     if (pass.length < 1)
       return res.status(400).json({
@@ -128,6 +128,9 @@ router.put("/changemypass", async (req, res) => {
     const ph = await bcrypt.hash(pass, salt);
 
     userr.passwordHash = ph;
+    
+    if (dereg)
+    userr.Dereg = dereg;
 
     const saveduserr = await userr.save();
 
@@ -170,7 +173,7 @@ router.put("/takeCommbyAuth", async (req, res) => {
     } else {
       return res.status(401).json({
         errorMessage:
-          "ניסית לקחת פיקוד מפקד מקוצעי שוטף אך אינך מחובר כמפקד יחידה",
+          "ניסית לקחת פיקוד מפקד מקצועי שוטף אך אינך מחובר כמפקד יחידה",
       });
     }
   } catch (err) {
@@ -653,6 +656,7 @@ router.put("/updateFullDetails2/:ma", async (req, res) => {
       unit,
       soogHatsava,
       maslool,
+      dereg,
     } = req.body;
 
     if (!firstname)
@@ -692,6 +696,9 @@ router.put("/updateFullDetails2/:ma", async (req, res) => {
     if (!maslool)
       return res.status(400).json({ errorMessage: "נא לבחור מסלול" });
 
+      if (!dereg)
+      return res.status(400).json({ errorMessage: "נא לבחור דרג מקצועי" });
+
     const token = req.cookies.token;
 
     if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
@@ -717,6 +724,8 @@ router.put("/updateFullDetails2/:ma", async (req, res) => {
       userrr.Unit = unit;
       userrr.SoogHatsava = soogHatsava;
       userrr.Maslool = maslool;
+      userrr.Dereg = dereg;
+
 
       const saveduserr = await userrr.save();
 

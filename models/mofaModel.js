@@ -2,6 +2,14 @@ const mongoose = require("mongoose");
 
 const mofaSchema = new mongoose.Schema(
   {
+    sMA: { type: Number, required: false },
+    sFirstName: { type: String, required: false },
+    sLastName: { type: String, required: false },
+    sNickName: { type: String, required: false },
+    sCourseNo: { type: Number, required: false },
+    sMaslool: { type: String, required: false },
+    sUnit: { type: String, required: false },
+
     isTest: { type: Boolean, required: true },
     isPass: { type: Boolean, required: true },
     fillDate: { type: Date, required: true },

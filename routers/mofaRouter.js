@@ -244,7 +244,22 @@ router.post("/createmofa", async (req, res) => {
     );
     const IsDeleted = false;
 
+    const sMA = CrewM.MA;
+    const sFirstName = CrewM.FirstName;
+    const sLastName = CrewM.LastName;
+    const sNickName = CrewM.NickName;
+    const sCourseNo = CrewM.CourseNo;
+    const sMaslool = CrewM.Maslool;
+    const sUnit = CrewM.Unit;
+
     const newmofa = new Mofa({
+      sMA,
+      sFirstName,
+      sLastName,
+      sNickName,
+      sCourseNo,
+      sMaslool,
+      sUnit,
       isTest,
       isPass,
       fillDate,
@@ -304,6 +319,89 @@ router.delete("/:id", async (req, res) => {
 
     res.json(c6 === ress.C6 ? { res: "asd" } : { res: "problem" });
   } catch (err) {
+    res.status(500).send();
+  }
+});
+
+router.get("/getallmyn", async (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+    const validatedUser = jwt.verify(token, process.env.JWTSECRET);
+
+    const comm = await User.findById(validatedUser.user);
+
+    const allmofas = await Mofa.find();
+
+    let allmynmofas = new Array();
+    let co2;
+
+    for (let i = 0; i < allmofas.length; i++) {
+      co2 = await User.findById(allmofas[i].CrewM);
+      if (co2 && co2.MyComm && co2.MyComm.toString() === comm._id.toString())
+        allmynmofas.push(allmofas[i]);
+    }
+
+    /* 
+    const mofans = await Mofa.find({ CrewM: screww });
+
+    if (
+      comm.Role === "DIRECT" ||
+      (comm.Role === "SCHOOL" &&
+        comm._id.toString() === screww[0].MyComm.toString())
+    ) {
+      for (let i = 0; i < mofans.length; i++)
+        mofans[i] = await addFudsTomofan(mofans[i]);
+      res.json(mofans);
+    } else {
+      try {
+        if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+        if (comm._id.toString() === screww[0].MyAuth.toString()) {
+          for (let i = 0; i < mofans.length; i++)
+            mofans[i] = await addFudsTomofan(mofans[i]);
+          res.json(mofans);
+        } else {
+          return res.status(401).json({
+            errorMessage:
+              'ניסית לקבל את כל החוו"דים של איש צוות אך אינך מפקד יחידה שלו',
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        res.status(500).send();
+      }
+    }
+  } catch (err) {
+    try {
+      const token = req.cookies.token;
+
+      if (!token) return res.status(400).json({ errorMessage: "אינך מחובר" });
+
+      const validatedUser = jwt.verify(token, process.env.JWTSECRET);
+
+      const userr = await User.findById(validatedUser.user);
+
+      const screww = await User.find({ MA: req.params.ma });
+
+      const mofans = await mofan.find({ CrewM: screww });
+
+      if (userr._id.toString() === screww[0].MyAuth.toString()) {
+        for (let i = 0; i < mofans.length; i++)
+          mofans[i] = await addFudsTomofan(mofans[i]);
+        res.json(mofans);
+      } else {
+        return res.status(401).json({
+          errorMessage:
+            'ניסית לקבל את כל החוו"דים של איש צוות אך אינך מפקד יחידה שלו',
+        });
+      } */
+
+    res.json(allmynmofas);
+  } catch (err) {
+    console.error(err);
     res.status(500).send();
   }
 });

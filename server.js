@@ -14,7 +14,12 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://keen-saha-4d5980.netlify.app"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5000",
+      "http://180.212.224.167:3000",
+      "https://keen-saha-4d5980.netlify.app",
+    ],
     credentials: true,
   })
 );
@@ -33,4 +38,6 @@ mongoose.connect(
 
 app.use("/user", require("./routers/userRouter"));
 app.use("/opinion", require("./routers/opinionRouter"));
+app.use("/certification", require("./routers/certificationRouter"));
+app.use("/footer", require("./routers/footerRouter"));
 app.use("/mofa", require("./routers/mofaRouter"));
