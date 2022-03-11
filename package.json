@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "nodemon server",
+    "start": "node server",
     "prod": "node server",
     "fat": "git commit -am \"make it bettera\" && git push heroku master"
   },
