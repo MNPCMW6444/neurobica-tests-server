@@ -859,6 +859,9 @@ router.post("/createOpinion", async (req, res) => {
       });
     }
   } catch (err) {
+    return res
+      .status(400)
+      .json({ errorMessage: "בדוק שפרטי המשתמש מעודכנים בספר הטלפונים" });
     res.status(500).send();
     console.log(err);
   }
